@@ -28,7 +28,7 @@ int faders[3]={A7,A6,A5};
 int joystic[4]={24,26,25,23};
 
 // variables to store values
-Bounce buttonState[16]; // modified bounce constructor to allow this
+Bounce *buttonState[16];
 int knobVal[4];
 int faderVal[3];
 boolean joysticState[4];
@@ -58,7 +58,7 @@ void setup(){
   //arcade buttons
   for(int i=0;i<16;i++){
     pinMode(buttons[i],INPUT_PULLUP);
-    buttonState[i]= Bounce(buttons[i],5);
+    *buttonState[i]= Bounce(buttons[i],5);
   }
   
   pinMode(6,OUTPUT); //hope this doesnt fry the led 
@@ -83,9 +83,9 @@ void loop(){
   //read buttons
   for(int i=0;i<16;i++){
     
-    if(buttonState[i].update()){//state changed
+    if(buttonState[i]->update()){//state changed
       
-      if(buttonState[i].read()==LOW){//is pressed
+      if(buttonState[i]->read()==LOW){//is pressed
          midiNoteOnOff(true,i+36);
       }
       else{
