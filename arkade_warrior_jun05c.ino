@@ -58,7 +58,7 @@ void setup(){
   //arcade buttons
   for(int i=0;i<16;i++){
     pinMode(buttons[i],INPUT_PULLUP);
-    *buttonState[i]= Bounce(buttons[i],5);
+    buttonState[i]= new Bounce(buttons[i],5);
   }
   
   pinMode(6,OUTPUT); //hope this doesnt fry the led 
