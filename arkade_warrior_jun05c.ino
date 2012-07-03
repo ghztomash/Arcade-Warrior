@@ -257,6 +257,7 @@ void checkCombo(boolean s){
         usbMIDI.sendNoteOff(12, 0, midiChannel);
         break;
     }
+    comboState=0;
   }
   
 }
