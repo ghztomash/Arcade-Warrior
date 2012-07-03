@@ -63,6 +63,12 @@ void setup(){
   
   pinMode(6,OUTPUT); //hope this doesnt fry the led 
   
+  //joystick buttons
+  for(int i=0;i<4;i++){
+    pinMode(joystic[i],INPUT_PULLUP);
+    joysticVal[i]=0;
+  }
+  
   // LEDS
   for(int i=0;i<3;i++){
     pinMode(leds[i],OUTPUT);
@@ -71,10 +77,22 @@ void setup(){
     digitalWrite(leds[i],LOW);
   }
   
-  //joystick buttons
-  for(int i=0;i<4;i++){
-    pinMode(joystic[i],INPUT_PULLUP);
-    joysticVal[i]=0;
+  //switch to ableton mode
+  // to switch hold joystick up and the first button while the device is booting
+  if ((jUp.read() != HIGH)&&(buttonState[0]->read()==LOW)){
+    
+    traktorrr=false;
+    //flash leds to indicate the mode change
+    for(int i=0;i<4;i++){
+      digitalWrite(leds[0],HIGH);
+      digitalWrite(leds[1],HIGH);
+      digitalWrite(leds[3],HIGH);
+      delay(50);
+      digitalWrite(leds[0],LOW);
+      digitalWrite(leds[1],LOW);
+      digitalWrite(leds[3],LOW);
+      delay(50);
+    }
   }
     
 }
