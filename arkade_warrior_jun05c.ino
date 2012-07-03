@@ -40,6 +40,8 @@ Bounce jDown = Bounce( joystic[1], 10 );
 Bounce jLeft = Bounce( joystic[2], 10 );
 Bounce jRight = Bounce( joystic[3], 10 );
 
+int comboState=0; //state of the current combo
+int comboBuffer[10]; //save the previous pressed buttons
 int temp;
 
 //initialize values and set modes
@@ -150,6 +152,11 @@ void loop(){
 // function to handle noteon outgoing messages
 void midiNoteOnOff(boolean s, int n){
   
+  //check if the key pressed is part of any secret combo
+  if(traktorrr){
+    checkCombo(s,n);
+  }
+  
    if(s){
      if(debugging){//debbuging enabled
         Serial.print("Button ");
@@ -168,6 +175,32 @@ void midiNoteOnOff(boolean s, int n){
        usbMIDI.sendNoteOff(n, 0, midiChannel);
      }
    }
+}
+
+//function to check for secret combos
+void checkCombo(boolean s,int n){
+  
+  // from MIDI Fighter Pro documentation:
+  
+  // COMBOS
+  //
+  //   A          B           C           D           E
+  // +--------+ +--------+  +--------+  +--------+  +--------+
+  // |        | |        |  |        |  |        |  |        |
+  // |        | |        |  |  3 4   |  |        |  |u       |
+  // |        | |n n n n |  |  1 2   |  |a b c d |  |l r A B |
+  // |1 2 3 4 | |        |  |        |  |        |  |d       |
+  // +--------+ +--------+  +--------+  +--------+  +--------+
+  //                                     a-b-c-c-d   uuddlrlrBA
+  //
+  // Combos retain a NoteOn while the final key is depressed and emit a NoteUp
+  // when it is released.
+  // Combo A               G#-2
+  // Combo B	A-2
+  // Combo C	A#-2
+  // Combo D	B-2
+  // Combo E	C-1
+  
 }
 
 // function to handle cc outgoing messages
