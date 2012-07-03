@@ -41,7 +41,6 @@ Bounce jLeft = Bounce( joystic[2], 10 );
 Bounce jRight = Bounce( joystic[3], 10 );
 
 int comboState=0; //state of the current combo
-int comboBuffer[10]; //save the previous pressed buttons
 int temp;
 
 //initialize values and set modes
@@ -154,7 +153,7 @@ void midiNoteOnOff(boolean s, int n){
   
   //check if the key pressed is part of any secret combo
   if(traktorrr){
-    checkCombo(s,n);
+    checkCombo(s);
   }
   
    if(s){
@@ -178,7 +177,7 @@ void midiNoteOnOff(boolean s, int n){
 }
 
 //function to check for secret combos
-void checkCombo(boolean s,int n){
+void checkCombo(boolean s){
   
   // from MIDI Fighter Pro documentation:
   
@@ -200,6 +199,65 @@ void checkCombo(boolean s,int n){
   // Combo C	A#-2
   // Combo D	B-2
   // Combo E	C-1
+  
+  
+  // lets simplify things a bit :)
+  //   A          B           C           D           E
+  // +--------+ +--------+  +--------+  +--------+  +--------+
+  // |        | |        |  |        |  |        |  |        |
+  // |        | |        |  |  x x   |  |        |  |x       |
+  // |        | |x x x x |  |  x x   |  |  x x x |  |    x x |
+  // |x x x x | |        |  |        |  |        |  |x       |
+  // +--------+ +--------+  +--------+  +--------+  +--------+
+
+  
+  //no combo active and a button is pressed
+  if((comboState==0)&&(s)){
+    // combo A
+    if((buttonState[12]->read()==LOW)&&(buttonState[13]->read()==LOW)&&(buttonState[14]->read()==LOW)&&(buttonState[15]->read()==LOW)){
+      comboState=1;
+      usbMIDI.sendNoteOn(8, 127, midiChannel);
+    }
+    //combo B
+    if((buttonState[8]->read()==LOW)&&(buttonState[9]->read()==LOW)&&(buttonState[10]->read()==LOW)&&(buttonState[11]->read()==LOW)){
+      comboState=2;
+      usbMIDI.sendNoteOn(9, 127, midiChannel);
+    }
+    //combo C
+    if((buttonState[9]->read()==LOW)&&(buttonState[10]->read()==LOW)&&(buttonState[5]->read()==LOW)&&(buttonState[6]->read()==LOW)){
+      comboState=3;
+      usbMIDI.sendNoteOn(10, 127, midiChannel);
+    }
+    //combo D
+    if((buttonState[9]->read()==LOW)&&(buttonState[10]->read()==LOW)&&(buttonState[11]->read()==LOW)){
+      comboState=4;
+      usbMIDI.sendNoteOn(11, 127, midiChannel);
+    }
+    //combo E
+    if((buttonState[12]->read()==LOW)&&(buttonState[4]->read()==LOW)&&(buttonState[10]->read()==LOW)&&(buttonState[11]->read()==LOW)){
+      comboState=5;
+      usbMIDI.sendNoteOn(12, 127, midiChannel);
+    }
+    
+  }else if((comboState!=0)&&(!s)){//combo was active and released
+    switch(comboState){
+      case 1:
+        usbMIDI.sendNoteOff(8, 0, midiChannel);
+        break;
+      case 2:
+        usbMIDI.sendNoteOff(9, 0, midiChannel);
+        break;  
+      case 3:
+        usbMIDI.sendNoteOff(10, 0, midiChannel);
+        break;
+      case 4:
+        usbMIDI.sendNoteOff(11, 0, midiChannel);
+        break;  
+      case 5:
+        usbMIDI.sendNoteOff(12, 0, midiChannel);
+        break;
+    }
+  }
   
 }
 
