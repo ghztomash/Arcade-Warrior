@@ -6,7 +6,7 @@
 
 //debugging will print out in serial instead of midi
 boolean debugging=false;
-boolean traktorrr=true;
+boolean traktorrr=false;
 
 //channel number for midi messages
 int midiChannel=3;
@@ -23,6 +23,9 @@ int buttons[16]={5,9,13,17, //first row
 int knobs[4]={A2,A3,A0,A1};
 
 int faders[3]={A7,A6,A5};
+
+//bank
+int bank=0;
 
 // pins for joystick buttons
 int joystic[4]={24,26,25,23};
@@ -80,20 +83,28 @@ void setup(){
   
   //switch to ableton mode
   // to switch hold joystick up and the first button while the device is booting
-  if ((jUp.read() != HIGH)&&(buttonState[0]->read()==LOW)){
+  for(int i=0;i<10;i++){
+    digitalWrite(leds[0],HIGH);
+    delay(100);
+    digitalWrite(leds[0],LOW);
+    delay(100);
     
-    traktorrr=false;
+  if ((buttonState[0]->read()==LOW)&&(buttonState[3]->read()==LOW)){
+    
+    traktorrr=true;
     //flash leds to indicate the mode change
-    for(int i=0;i<4;i++){
+    for(int i=0;i<10;i++){
       digitalWrite(leds[0],HIGH);
       digitalWrite(leds[1],HIGH);
-      digitalWrite(leds[3],HIGH);
-      delay(50);
+      digitalWrite(leds[2],HIGH);
+      delay(100);
       digitalWrite(leds[0],LOW);
       digitalWrite(leds[1],LOW);
-      digitalWrite(leds[3],LOW);
-      delay(50);
+      digitalWrite(leds[2],LOW);
+      delay(100);
     }
+        break;
+  }
   }
     
 }
@@ -105,10 +116,10 @@ void loop(){
     if(buttonState[i]->update()){//state changed
       
       if(buttonState[i]->read()==LOW){//is pressed
-         midiNoteOnOff(true,i+36);
+         midiNoteOnOff(true,i+36+bank*16);
       }
       else{
-        midiNoteOnOff(false,i+36);
+        midiNoteOnOff(false,i+36+bank*16);
       }
       
     }
@@ -119,7 +130,7 @@ void loop(){
     temp=map(analogRead(knobs[i]),0,1023,0,127);
 
     if(temp!=knobVal[i]){ //value changed
-      midiCC(temp,i*2+16);
+      midiCC(temp,i*2+16+bank*17);
     }
     knobVal[i]=temp;
   }// end loop
@@ -128,13 +139,37 @@ void loop(){
     temp=map(analogRead(faders[i]),0,1023,0,127);
 
     if(temp!=faderVal[i]){ //value changed
-      midiCC(temp,i*2+24);
+      midiCC(temp,i*2+24+bank*17);
     }
     faderVal[i]=temp;
   }// end loop
   
   // read joystic guestures
   readJoystic();
+    
+  // update leds depending on bank
+  switch(bank){
+    case 0:
+        ledState[0]=false;
+        ledState[1]=false;
+        ledState[2]=false;
+        break;
+    case 1:
+        ledState[0]=true;
+        ledState[1]=false;
+        ledState[2]=false;
+        break;
+    case 2:
+        ledState[0]=true;
+        ledState[1]=true;
+        ledState[2]=false;
+        break;
+    case 3:
+        ledState[0]=true;
+        ledState[1]=true;
+        ledState[2]=true;
+        break;
+  }
   
   // update leds
   for(int i=0;i<3;i++){
@@ -195,7 +230,7 @@ void checkCombo(boolean s){
   // Combos retain a NoteOn while the final key is depressed and emit a NoteUp
   // when it is released.
   // Combo A               G#-2
-  // Combo B	A-2
+  // Combo B               A-2
   // Combo C	A#-2
   // Combo D	B-2
   // Combo E	C-1
@@ -214,27 +249,27 @@ void checkCombo(boolean s){
   //no combo active and a button is pressed
   if((comboState==0)&&(s)){
     // combo A
-    if((buttonState[12]->read()==LOW)&&(buttonState[13]->read()==LOW)&&(buttonState[14]->read()==LOW)&&(buttonState[15]->read()==LOW)){
+    if((buttonState[0]->read()==LOW)&&(buttonState[1]->read()==LOW)&&(buttonState[2]->read()==LOW)&&(buttonState[3]->read()==LOW)){
       comboState=1;
       usbMIDI.sendNoteOn(8, 127, midiChannel);
-    }
+    }else
     //combo B
-    if((buttonState[8]->read()==LOW)&&(buttonState[9]->read()==LOW)&&(buttonState[10]->read()==LOW)&&(buttonState[11]->read()==LOW)){
+    if((buttonState[4]->read()==LOW)&&(buttonState[5]->read()==LOW)&&(buttonState[6]->read()==LOW)&&(buttonState[7]->read()==LOW)){
       comboState=2;
       usbMIDI.sendNoteOn(9, 127, midiChannel);
-    }
+    }else
     //combo C
-    if((buttonState[9]->read()==LOW)&&(buttonState[10]->read()==LOW)&&(buttonState[5]->read()==LOW)&&(buttonState[6]->read()==LOW)){
+    if((buttonState[5]->read()==LOW)&&(buttonState[6]->read()==LOW)&&(buttonState[9]->read()==LOW)&&(buttonState[10]->read()==LOW)){
       comboState=3;
       usbMIDI.sendNoteOn(10, 127, midiChannel);
-    }
+    }else
     //combo D
-    if((buttonState[9]->read()==LOW)&&(buttonState[10]->read()==LOW)&&(buttonState[11]->read()==LOW)){
+    if((buttonState[5]->read()==LOW)&&(buttonState[6]->read()==LOW)&&(buttonState[7]->read()==LOW)){
       comboState=4;
       usbMIDI.sendNoteOn(11, 127, midiChannel);
-    }
+    }else
     //combo E
-    if((buttonState[12]->read()==LOW)&&(buttonState[4]->read()==LOW)&&(buttonState[10]->read()==LOW)&&(buttonState[11]->read()==LOW)){
+    if((buttonState[0]->read()==LOW)&&(buttonState[8]->read()==LOW)&&(buttonState[6]->read()==LOW)&&(buttonState[7]->read()==LOW)){
       comboState=5;
       usbMIDI.sendNoteOn(12, 127, midiChannel);
     }
@@ -277,7 +312,7 @@ void midiCC(int v,int n){
       else if(v==127)
         usbMIDI.sendNoteOn(n+85, 127, midiChannel);
       if(v<=64)
-        usbMIDI.sendControlChange(n+1, map(v,0,64,0,127), midiChannel);
+        usbMIDI.sendControlChange(n+1, map(v,0,64,0,105), midiChannel);
     }
   }
   
@@ -368,13 +403,17 @@ void readJoystic(){
    //act as rotary encoder
    if ( !jLeft.update() ){//state didnot change
      if ( jLeft.read() != HIGH) {//is held on
-         if(jLeft.duration()%100>85){//increment the value
-           if(debugging){
-             Serial.println("<<");
-           }else{
-             usbMIDI.sendControlChange(32, 63, midiChannel);
-           }
+       if ( joysticState[2] == LOW ) {//last state was low
+         joysticState[2] = HIGH;
+         if(bank==0)
+           bank=3;
+         else
+           bank=bank-1;
        }
+     }else{// it was released
+        if ( joysticState[2] == HIGH ) {//last state was low
+         joysticState[2] = LOW;
+     }
      }
    }
    
@@ -382,16 +421,17 @@ void readJoystic(){
    //act as rotary encoder
    if ( !jRight.update() ){//state didnot change
      if ( jRight.read() != HIGH) {//is held on
-         if(jRight.duration()%100>85){//increment the value
-           if(debugging){
-             Serial.println(">>");
-           }else{
-             usbMIDI.sendControlChange(32, 65, midiChannel);
-           }
+         if ( joysticState[3] == LOW ) {//last state was low
+         joysticState[3] = HIGH;
+           bank=(bank+1)%4;
        }
      }
+     else{// it was released
+        if ( joysticState[3] == HIGH ) {//last state was low
+         joysticState[3] = LOW;
+     }
    }
-   
+   }
 }
 
 //event handlers for recieved note ons
