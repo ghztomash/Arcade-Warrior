@@ -50,7 +50,7 @@ int temp;
 void setup(){
   
   //DEBUG
-  if(debugging){
+  if (debugging){
     Serial.begin(9600);//open serail port
   }
   else{
@@ -113,9 +113,9 @@ void loop(){
   //read buttons
   for(int i=0;i<16;i++){
     
-    if(buttonState[i]->update()){//state changed
+    if (buttonState[i]->update()){//state changed
       
-      if(buttonState[i]->read()==LOW){//is pressed
+      if (buttonState[i]->read()==LOW){//is pressed
          midiNoteOnOff(true,i+36+bank*16);
       }
       else{
@@ -129,7 +129,7 @@ void loop(){
   for(int i=0;i<4;i++){
     temp=map(analogRead(knobs[i]),0,1023,0,127);
 
-    if(temp!=knobVal[i]){ //value changed
+    if (temp!=knobVal[i]){ //value changed
       midiCC(temp,i*2+16+bank*17);
     }
     knobVal[i]=temp;
@@ -138,7 +138,7 @@ void loop(){
   for(int i=0;i<3;i++){
     temp=map(analogRead(faders[i]),0,1023,0,127);
 
-    if(temp!=faderVal[i]){ //value changed
+    if (temp!=faderVal[i]){ //value changed
       midiCC(temp,i*2+24+bank*17);
     }
     faderVal[i]=temp;
@@ -177,7 +177,7 @@ void loop(){
   }
   
   //recieve MIDI messages
-  if(!debugging){
+  if (!debugging){
     usbMIDI.read();
   }
   
@@ -187,12 +187,12 @@ void loop(){
 void midiNoteOnOff(boolean s, int n){
   
   //check if the key pressed is part of any secret combo
-  if(traktorrr){
+  if (traktorrr){
     checkCombo(s);
   }
   
-   if(s){
-     if(debugging){//debbuging enabled
+   if (s){
+     if (debugging){//debbuging enabled
         Serial.print("Button ");
         Serial.print(n);
         Serial.println(" pressed.");
@@ -201,7 +201,7 @@ void midiNoteOnOff(boolean s, int n){
      }
    }
    else {
-     if(debugging){//debbuging enabled
+     if (debugging){//debbuging enabled
         Serial.print("Button ");
         Serial.print(n);
         Serial.println(" released.");
@@ -231,7 +231,7 @@ void checkCombo(boolean s){
   // when it is released.
   // Combo A               G#-2
   // Combo B               A-2
-  // Combo C	A#-2
+  // Combo C               A#-2
   // Combo D	B-2
   // Combo E	C-1
   
@@ -247,34 +247,48 @@ void checkCombo(boolean s){
 
   
   //no combo active and a button is pressed
-  if((comboState==0)&&(s)){
+  if ((comboState==0)&&(s)){
     // combo A
-    if((buttonState[0]->read()==LOW)&&(buttonState[1]->read()==LOW)&&(buttonState[2]->read()==LOW)&&(buttonState[3]->read()==LOW)){
+    if ((buttonState[0]->read()==LOW)
+        &&(buttonState[1]->read()==LOW)
+        &&(buttonState[2]->read()==LOW)
+        &&(buttonState[3]->read()==LOW)){
       comboState=1;
       usbMIDI.sendNoteOn(8, 127, midiChannel);
     }else
     //combo B
-    if((buttonState[4]->read()==LOW)&&(buttonState[5]->read()==LOW)&&(buttonState[6]->read()==LOW)&&(buttonState[7]->read()==LOW)){
+    if ((buttonState[4]->read()==LOW)
+        &&(buttonState[5]->read()==LOW)
+        &&(buttonState[6]->read()==LOW)
+        &&(buttonState[7]->read()==LOW)){
       comboState=2;
       usbMIDI.sendNoteOn(9, 127, midiChannel);
     }else
     //combo C
-    if((buttonState[5]->read()==LOW)&&(buttonState[6]->read()==LOW)&&(buttonState[9]->read()==LOW)&&(buttonState[10]->read()==LOW)){
+    if ((buttonState[5]->read()==LOW)
+        &&(buttonState[6]->read()==LOW)
+        &&(buttonState[9]->read()==LOW)
+        &&(buttonState[10]->read()==LOW)){
       comboState=3;
       usbMIDI.sendNoteOn(10, 127, midiChannel);
     }else
     //combo D
-    if((buttonState[5]->read()==LOW)&&(buttonState[6]->read()==LOW)&&(buttonState[7]->read()==LOW)){
+    if ((buttonState[5]->read()==LOW)
+        &&(buttonState[6]->read()==LOW)
+        &&(buttonState[7]->read()==LOW)){
       comboState=4;
       usbMIDI.sendNoteOn(11, 127, midiChannel);
     }else
     //combo E
-    if((buttonState[0]->read()==LOW)&&(buttonState[8]->read()==LOW)&&(buttonState[6]->read()==LOW)&&(buttonState[7]->read()==LOW)){
+    if ((buttonState[0]->read()==LOW)
+        &&(buttonState[8]->read()==LOW)
+        &&(buttonState[6]->read()==LOW)
+        &&(buttonState[7]->read()==LOW)){
       comboState=5;
       usbMIDI.sendNoteOn(12, 127, midiChannel);
     }
     
-  }else if((comboState!=0)&&(!s)){//combo was active and released
+  }else if ((comboState!=0)&&(!s)){//combo was active and released
     switch(comboState){
       case 1:
         usbMIDI.sendNoteOff(8, 0, midiChannel);
@@ -299,19 +313,19 @@ void checkCombo(boolean s){
 
 // function to handle cc outgoing messages
 void midiCC(int v,int n){
-  if(debugging){//debbuging enabled
+  if (debugging){//debbuging enabled
     Serial.print("Potentiometer ");
     Serial.print(n);
     Serial.print(" changed value to ");
     Serial.println(v);
   }else{
     usbMIDI.sendControlChange(n, v, midiChannel);
-    if(traktorrr){
-      if(v==0)
+    if (traktorrr){
+      if (v==0)
         usbMIDI.sendNoteOn(n+84, 127, midiChannel);
-      else if(v==127)
+      else if (v==127)
         usbMIDI.sendNoteOn(n+85, 127, midiChannel);
-      if(v<=64)
+      if (v<=64)
         usbMIDI.sendControlChange(n+1, map(v,0,64,0,105), midiChannel);
     }
   }
@@ -333,7 +347,7 @@ void readJoystic(){
          joysticState[0] = LOW;
          joysticVal[0]=0;
          
-         if(debugging){
+         if (debugging){
              Serial.println(joysticVal[0]);
            }else{
              usbMIDI.sendControlChange(30, joysticVal[0], midiChannel);
@@ -345,11 +359,11 @@ void readJoystic(){
    }
    else{//state didnot change
      if ( jUp.read() != HIGH) {//is held on
-       if(jUp.duration()>500){// was held longer than half sec
-         if(jUp.duration()%100>90){//increment the value
+       if (jUp.duration()>500){// was held longer than half sec
+         if (jUp.duration()%100>90){//increment the value
            joysticVal[0]++;
            joysticVal[0]=constrain(joysticVal[0],0,127);
-           if(debugging){
+           if (debugging){
              Serial.println(joysticVal[0]);
            }else{
              usbMIDI.sendControlChange(30, joysticVal[0], midiChannel);
@@ -373,7 +387,7 @@ void readJoystic(){
          joysticState[1] = LOW;
          joysticVal[1]=0;
          
-         if(debugging){
+         if (debugging){
              Serial.println(joysticVal[1]);
            }else{
              usbMIDI.sendControlChange(31, joysticVal[1], midiChannel);
@@ -385,11 +399,11 @@ void readJoystic(){
    }
    else{//state didnot change
      if ( jDown.read() != HIGH) {//is held on
-       if(jDown.duration()>500){// was held longer than half sec
-         if(jDown.duration()%100>95){//increment the value
+       if (jDown.duration()>500){// was held longer than half sec
+         if (jDown.duration()%100>95){//increment the value
            joysticVal[1]++;
            joysticVal[1]=constrain(joysticVal[1],0,127);
-           if(debugging){
+           if (debugging){
              Serial.println(joysticVal[1]);
            }else{
              usbMIDI.sendControlChange(31, joysticVal[1], midiChannel);
@@ -405,7 +419,7 @@ void readJoystic(){
      if ( jLeft.read() != HIGH) {//is held on
        if ( joysticState[2] == LOW ) {//last state was low
          joysticState[2] = HIGH;
-         if(bank==0)
+         if (bank==0)
            bank=3;
          else
            bank=bank-1;
@@ -436,33 +450,33 @@ void readJoystic(){
 
 //event handlers for recieved note ons
 void myNoteOn(byte channel,byte  note,byte velocity){
-  if(channel==midiChannel){
-    if(note==(byte)0)
+  if (channel==midiChannel){
+    if (note==(byte)0)
       ledState[0]=true;
-    if(note==(byte)1)
+    if (note==(byte)1)
       ledState[1]=true;
-    if(note==(byte)2)
+    if (note==(byte)2)
       ledState[2]=true;
   }
   
-  if((channel==midiChannel)&&(velocity==0)){
-    if(note==(byte)0)
+  if ((channel==midiChannel)&&(velocity==0)){
+    if (note==(byte)0)
       ledState[0]=false;
-     if(note==(byte)1)
+     if (note==(byte)1)
       ledState[1]=false;
-     if(note==(byte)2)
+     if (note==(byte)2)
       ledState[2]=false;
   }
   
 }
 
 void myNoteOff(byte channel,byte  note,byte velocity){
-  if(channel==midiChannel){
-    if(note==(byte)0)
+  if (channel==midiChannel){
+    if (note==(byte)0)
       ledState[0]=false;
-     if(note==(byte)1)
+     if (note==(byte)1)
       ledState[1]=false;
-     if(note==(byte)2)
+     if (note==(byte)2)
       ledState[2]=false;
   }
 }
